@@ -17,6 +17,6 @@ public interface RestoTableRepository extends JpaRepository<RestoTable, Long> {
 
     @Query("SELECT t FROM RestoTable t WHERE NOT EXISTS (" +
             "SELECT 1 FROM Reservation r WHERE r.restoTable = t " +
-            "AND r.start < :end AND r.end > :start)")
+            "AND r.startTime < :end AND r.endTime > :start)")
     List<RestoTable> findAvailableTables(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 }

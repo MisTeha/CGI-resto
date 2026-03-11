@@ -11,11 +11,11 @@ public class Reservation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private LocalDateTime start;
+    @Column(name = "start_time", nullable = false)
+    private LocalDateTime startTime;
 
-    @Column(nullable = false)
-    private LocalDateTime end;
+    @Column(name = "end_time", nullable = false)
+    private LocalDateTime endTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "table_id", nullable = false)
@@ -34,16 +34,16 @@ public class Reservation {
     }
 
     public Reservation(LocalDateTime start, LocalDateTime end, RestoTable restoTable, Integer numberOfPeople) {
-        this.start = start;
-        this.end = end;
+        this.startTime = start;
+        this.endTime = end;
         this.restoTable = restoTable;
         this.numberOfPeople = numberOfPeople;
     }
 
     public Reservation(LocalDateTime start, LocalDateTime end, RestoTable restoTable, Integer numberOfPeople,
-                       String customerName, String customerPhone) {
-        this.start = start;
-        this.end = end;
+            String customerName, String customerPhone) {
+        this.startTime = start;
+        this.endTime = end;
         this.restoTable = restoTable;
         this.numberOfPeople = numberOfPeople;
         this.customerName = customerName;
@@ -59,19 +59,19 @@ public class Reservation {
     }
 
     public LocalDateTime getStart() {
-        return start;
+        return startTime;
     }
 
     public void setStart(LocalDateTime start) {
-        this.start = start;
+        this.startTime = start;
     }
 
     public LocalDateTime getEnd() {
-        return end;
+        return endTime;
     }
 
     public void setEnd(LocalDateTime end) {
-        this.end = end;
+        this.endTime = end;
     }
 
     public RestoTable getTable() {

@@ -24,7 +24,7 @@ public class RestoTable {
     @Column(name = "table_number")
     private String tableNumber;
 
-    @OneToMany(mappedBy = "table", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "restoTable", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reservation> reservations;
 
     public RestoTable() {
