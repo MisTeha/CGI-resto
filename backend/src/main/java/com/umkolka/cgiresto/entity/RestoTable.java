@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
-@jakarta.persistence.Table(name = "resto_tables")
+@Table(name = "resto_tables")
 public class RestoTable {
 
     @Id
