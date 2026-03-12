@@ -16,8 +16,8 @@ import java.util.List;
 @RepositoryRestResource(path = "reservations", collectionResourceRel = "reservations")
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
-    @Query("SELECT r FROM Reservation r WHERE r.restoTable = :table " +
+    @Query("SELECT r FROM Reservation r WHERE r.restoTable.id = :tableId " +
             "AND CAST(r.startTime AS date) = :day " +
             "ORDER BY r.startTime")
-    List<Reservation> findReservationsByTableAndDay(@Param("table") RestoTable table, @Param("day") LocalDate day);
+    List<Reservation> findReservationsByTableAndDay(@Param("tableId") Long tableId, @Param("day") LocalDate day);
 }
