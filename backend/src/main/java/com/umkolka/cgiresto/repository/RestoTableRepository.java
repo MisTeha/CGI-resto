@@ -10,9 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 // Koodijupid võetud ja modifitseeritud järgmistelt:
-// https://spring.io/guides/gs/accessing-data-rest ja
 // https://docs.spring.io/spring-data/jpa/reference/jpa/query-methods.html
-@RepositoryRestResource(path = "tables", collectionResourceRel = "tables")
 public interface RestoTableRepository extends JpaRepository<RestoTable, Long> {
 
     @Query("SELECT t FROM RestoTable t WHERE NOT EXISTS (" +
