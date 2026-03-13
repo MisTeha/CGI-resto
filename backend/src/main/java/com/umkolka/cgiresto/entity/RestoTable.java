@@ -24,23 +24,21 @@ public class RestoTable {
     @Column(name = "table_number")
     private String tableNumber;
 
+    @Column(name = "privacy_score")
+    private Integer privacyScore;
+
     @OneToMany(mappedBy = "restoTable", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reservation> reservations;
 
     public RestoTable() {
     }
 
-    public RestoTable(Zone zone, Integer nSeats, Boolean isNextToWindow) {
-        this.zone = zone;
-        this.nSeats = nSeats;
-        this.isNextToWindow = isNextToWindow;
-    }
-
-    public RestoTable(Zone zone, Integer nSeats, Boolean isNextToWindow, String tableNumber) {
+    public RestoTable(Zone zone, Integer nSeats, Boolean isNextToWindow, String tableNumber, Integer privacyScore) {
         this.zone = zone;
         this.nSeats = nSeats;
         this.isNextToWindow = isNextToWindow;
         this.tableNumber = tableNumber;
+        this.privacyScore = privacyScore;
     }
 
     public Long getId() {
@@ -81,6 +79,14 @@ public class RestoTable {
 
     public void setTableNumber(String tableNumber) {
         this.tableNumber = tableNumber;
+    }
+
+    public Integer getPrivacyScore() {
+        return privacyScore;
+    }
+
+    public void setPrivacyScore(Integer privacyScore) {
+        this.privacyScore = privacyScore;
     }
 
     public List<Reservation> getReservations() {

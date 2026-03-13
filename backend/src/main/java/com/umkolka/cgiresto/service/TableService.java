@@ -31,6 +31,7 @@ public class TableService {
                 "zoneId", table.getZone().getId(),
                 "zoneName", table.getZone().getName(),
                 "nSeats", table.getNSeats(),
-                "nextToWindow", table.getIsNextToWindow());
+                "nextToWindow", table.getIsNextToWindow(),
+                "privacyScore", table.getPrivacyScore());
     }
 }
