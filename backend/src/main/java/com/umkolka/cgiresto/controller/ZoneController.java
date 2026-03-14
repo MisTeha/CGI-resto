@@ -1,0 +1,25 @@
+package com.umkolka.cgiresto.controller;
+
+import com.umkolka.cgiresto.service.ZoneService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/zones")
+public class ZoneController {
+
+    private final ZoneService zoneService;
+
+    public ZoneController(ZoneService zoneService) {
+        this.zoneService = zoneService;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ZoneService.ZoneView>> getZones() {
+        return ResponseEntity.ok(zoneService.getZones());
+    }
+}

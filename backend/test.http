@@ -1,0 +1,71 @@
+### keelemudeli genereeritud
+
+@baseUrl = http://localhost:8080
+
+### ─── Tables ──────────────────────────────────────────────────────────────────
+
+### Get all tables
+GET {{baseUrl}}/api/tables
+Accept: application/json
+
+### Get all zones
+GET {{baseUrl}}/api/zones
+Accept: application/json
+
+### ─── Availability ────────────────────────────────────────────────────────────
+
+### Get table recommendations (minimal params)
+GET {{baseUrl}}/api/availability/recommendations
+  ?startTime=2026-03-15T18:00:00
+  &durationMinutes=90
+  &partySize=2
+  &zoneId=1
+Accept: application/json
+
+### Get table recommendations (window preferred)
+GET {{baseUrl}}/api/availability/recommendations
+  ?startTime=2026-03-15T19:00:00
+  &durationMinutes=60
+  &partySize=4
+  &zoneId=1
+  &windowPreferred=true
+  &privacyPreferred=false
+Accept: application/json
+
+### Get table recommendations (privacy preferred)
+GET {{baseUrl}}/api/availability/recommendations
+  ?startTime=2026-03-16T20:00:00
+  &durationMinutes=120
+  &partySize=6
+  &zoneId=2
+  &windowPreferred=false
+  &privacyPreferred=true
+Accept: application/json
+
+### ─── Bookings ────────────────────────────────────────────────────────────────
+
+### Create a booking
+POST {{baseUrl}}/api/bookings
+  ?tableId=1
+  &startTime=2026-03-15T18:00:00
+  &durationMinutes=90
+  &numberOfPeople=2
+  &customerName=Jane%20Doe
+  &customerPhone=%2B37255512345
+Accept: application/json
+
+### Create a booking (larger group)
+POST {{baseUrl}}/api/bookings
+  ?tableId=3
+  &startTime=2026-03-16T20:00:00
+  &durationMinutes=120
+  &numberOfPeople=5
+  &customerName=John%20Smith
+  &customerPhone=%2B37255598765
+Accept: application/json
+
+### Get bookings for a table on a specific day
+GET {{baseUrl}}/api/bookings/by-table-and-day
+  ?tableId=1
+  &day=2026-03-15
+Accept: application/json
