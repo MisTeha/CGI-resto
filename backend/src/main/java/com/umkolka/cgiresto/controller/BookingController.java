@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 //https://www.baeldung.com/spring-validate-requestparam-pathvariable
 //ja https://www.baeldung.com/java-validation
@@ -33,14 +32,14 @@ public class BookingController {
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, Object>> create(
+    public ResponseEntity<BookingService.BookingView> create(
             @RequestParam @NotNull Long tableId,
             @RequestParam @NotNull @Future @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
             @RequestParam @NotNull @Min(30) Integer durationMinutes,
             @RequestParam @NotNull @Min(1) Integer numberOfPeople,
             @RequestParam @NotBlank String customerName,
             @RequestParam @NotBlank String customerPhone) {
-        Map<String, Object> created = service.createBooking(
+        BookingService.BookingView created = service.createBooking(
                 tableId,
                 startTime,
                 durationMinutes,
@@ -51,7 +50,7 @@ public class BookingController {
     }
 
     @GetMapping("/by-table-and-day")
-    public ResponseEntity<List<Map<String, Object>>> getByTableAndDay(
+    public ResponseEntity<List<BookingService.BookingView>> getByTableAndDay(
             @RequestParam Long tableId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate day) {
         return ResponseEntity.ok(service.getBookingsByTableAndDay(tableId, day));

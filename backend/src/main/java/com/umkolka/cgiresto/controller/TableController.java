@@ -1,7 +1,6 @@
 package com.umkolka.cgiresto.controller;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +21,7 @@ public class TableController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> getTables() {
+    public ResponseEntity<List<TableService.TableView>> getTables() {
         return ResponseEntity.ok(service.getTables());
     }
 }

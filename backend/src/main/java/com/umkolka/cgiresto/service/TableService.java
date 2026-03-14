@@ -1,7 +1,6 @@
 package com.umkolka.cgiresto.service;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
@@ -11,29 +10,41 @@ import com.umkolka.cgiresto.repository.RestoTableRepository;
 @Service
 public class TableService {
 
+    public record TableView(
+            Long tableId,
+            String tableNumber,
+            Long zoneId,
+            String zoneName,
+            Integer nSeats,
+            Boolean nextToWindow,
+            Integer privacyScore,
+            Integer gridX,
+            Integer gridY) {
+    }
+
     private final RestoTableRepository repository;
 
     public TableService(RestoTableRepository repository) {
         this.repository = repository;
     }
 
-    public List<Map<String, Object>> getTables() {
+    public List<TableView> getTables() {
         return repository.findAll().stream()
-                .map(this::toTableMap)
+                .map(this::toTableView)
                 .toList();
 
     }
 
-    private Map<String, Object> toTableMap(RestoTable table) {
-        return Map.of(
-                "tableId", table.getId(),
-                "tableNumber", table.getTableNumber(),
-                "zoneId", table.getZone().getId(),
-                "zoneName", table.getZone().getName(),
-                "nSeats", table.getNSeats(),
-                "nextToWindow", table.getIsNextToWindow(),
-            "privacyScore", table.getPrivacyScore(),
-            "gridX", table.getGridX(),
-            "gridY", table.getGridY());
+    private TableView toTableView(RestoTable table) {
+        return new TableView(
+                table.getId(),
+                table.getTableNumber(),
+                table.getZone().getId(),
+                table.getZone().getName(),
+                table.getNSeats(),
+                table.getIsNextToWindow(),
+                table.getPrivacyScore(),
+                table.getGridX(),
+                table.getGridY());
     }
 }

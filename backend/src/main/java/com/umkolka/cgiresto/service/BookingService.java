@@ -11,10 +11,19 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class BookingService {
+
+    public record BookingView(
+            Long id,
+            Long tableId,
+            LocalDateTime startTime,
+            LocalDateTime endTime,
+            Integer numberOfPeople,
+            String customerName,
+            String customerPhone) {
+    }
 
     private final ReservationRepository reservationRepository;
     private final RestoTableRepository tableRepository;
@@ -24,7 +33,7 @@ public class BookingService {
         this.tableRepository = tableRepository;
     }
 
-    public Map<String, Object> createBooking(
+    public BookingView createBooking(
             Long tableId,
             LocalDateTime startTime,
             Integer durationMinutes,
@@ -59,27 +68,27 @@ public class BookingService {
                 customerName,
                 customerPhone));
 
-        return toReservationMap(created);
+        return toBookingView(created);
     }
 
-    public List<Map<String, Object>> getBookingsByTableAndDay(Long tableId, LocalDate day) {
+    public List<BookingView> getBookingsByTableAndDay(Long tableId, LocalDate day) {
         if (!tableRepository.existsById(tableId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lauda ID-ga " + tableId + " ei leitud");
         }
 
         return reservationRepository.findReservationsByTableAndDay(tableId, day).stream()
-                .map(this::toReservationMap)
+                .map(this::toBookingView)
                 .toList();
     }
 
-    private Map<String, Object> toReservationMap(Reservation reservation) {
-        return Map.of(
-                "id", reservation.getId(),
-                "tableId", reservation.getTable().getId(),
-                "startTime", reservation.getStart(),
-                "endTime", reservation.getEnd(),
-                "numberOfPeople", reservation.getNumberOfPeople(),
-                "customerName", reservation.getCustomerName(),
-                "customerPhone", reservation.getCustomerPhone());
+    private BookingView toBookingView(Reservation reservation) {
+        return new BookingView(
+                reservation.getId(),
+                reservation.getTable().getId(),
+                reservation.getStart(),
+                reservation.getEnd(),
+                reservation.getNumberOfPeople(),
+                reservation.getCustomerName(),
+                reservation.getCustomerPhone());
     }
 }
