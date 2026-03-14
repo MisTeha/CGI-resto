@@ -22,7 +22,9 @@ public class AvailabilityService {
             String zoneName,
             Integer nSeats,
             Boolean nextToWindow,
-            Integer privacyScore) {
+            Integer privacyScore,
+            Integer gridX,
+            Integer gridY) {
     }
 
     public record RecommendationBuckets(
@@ -94,7 +96,9 @@ public class AvailabilityService {
                         table.getZone().getName(),
                         table.getNSeats(),
                         table.getIsNextToWindow(),
-                        table.getPrivacyScore()))
+                        table.getPrivacyScore(),
+                        table.getGridX(),
+                        table.getGridY()))
                 .toList();
     }
 

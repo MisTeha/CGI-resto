@@ -45,16 +45,16 @@ public class DataLoader implements CommandLineRunner {
         zoneRepository.save(vipZone);
 
         // Create tables for main zone
-        RestoTable table1 = new RestoTable(mainZone, 2, false, "1", 60);
-        RestoTable table2 = new RestoTable(mainZone, 4, true, "2", 55);
-        RestoTable table3 = new RestoTable(mainZone, 6, false, "3", 50);
+        RestoTable table1 = new RestoTable(mainZone, 2, false, "1", 60, 1, 1);
+        RestoTable table2 = new RestoTable(mainZone, 4, true, "2", 55, 3, 1);
+        RestoTable table3 = new RestoTable(mainZone, 6, false, "3", 50, 2, 3);
 
         // Create tables for outdoor zone
-        RestoTable table4 = new RestoTable(outdoorZone, 4, true, "4", 40);
-        RestoTable table5 = new RestoTable(outdoorZone, 8, true, "5", 45);
+        RestoTable table4 = new RestoTable(outdoorZone, 4, true, "4", 40, 1, 1);
+        RestoTable table5 = new RestoTable(outdoorZone, 8, true, "5", 45, 4, 2);
 
         // Create tables for VIP zone
-        RestoTable table6 = new RestoTable(vipZone, 10, false, "6", 95);
+        RestoTable table6 = new RestoTable(vipZone, 10, false, "6", 95, 2, 2);
 
         restoTableRepository.save(table1);
         restoTableRepository.save(table2);

@@ -32,6 +32,8 @@ public class TableService {
                 "zoneName", table.getZone().getName(),
                 "nSeats", table.getNSeats(),
                 "nextToWindow", table.getIsNextToWindow(),
-                "privacyScore", table.getPrivacyScore());
+            "privacyScore", table.getPrivacyScore(),
+            "gridX", table.getGridX(),
+            "gridY", table.getGridY());
     }
 }

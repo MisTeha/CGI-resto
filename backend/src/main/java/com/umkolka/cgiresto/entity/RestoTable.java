@@ -27,18 +27,33 @@ public class RestoTable {
     @Column(name = "privacy_score")
     private Integer privacyScore;
 
+    @Column(name = "grid_x", nullable = false)
+    private Integer gridX;
+
+    @Column(name = "grid_y", nullable = false)
+    private Integer gridY;
+
     @OneToMany(mappedBy = "restoTable", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reservation> reservations;
 
     public RestoTable() {
     }
 
-    public RestoTable(Zone zone, Integer nSeats, Boolean isNextToWindow, String tableNumber, Integer privacyScore) {
+    public RestoTable(
+            Zone zone,
+            Integer nSeats,
+            Boolean isNextToWindow,
+            String tableNumber,
+            Integer privacyScore,
+            Integer gridX,
+            Integer gridY) {
         this.zone = zone;
         this.nSeats = nSeats;
         this.isNextToWindow = isNextToWindow;
         this.tableNumber = tableNumber;
         this.privacyScore = privacyScore;
+        this.gridX = gridX;
+        this.gridY = gridY;
     }
 
     public Long getId() {
@@ -87,6 +102,22 @@ public class RestoTable {
 
     public void setPrivacyScore(Integer privacyScore) {
         this.privacyScore = privacyScore;
+    }
+
+    public Integer getGridX() {
+        return gridX;
+    }
+
+    public void setGridX(Integer gridX) {
+        this.gridX = gridX;
+    }
+
+    public Integer getGridY() {
+        return gridY;
+    }
+
+    public void setGridY(Integer gridY) {
+        this.gridY = gridY;
     }
 
     public List<Reservation> getReservations() {
