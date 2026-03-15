@@ -5,10 +5,12 @@
 	import { goto } from '$app/navigation';
 
 	import { postBooking } from '$lib/api';
+	import BookingConfirmationDialog from '$lib/components/BookingConfirmationDialog.svelte';
 	import FloorGrid from '$lib/components/FloorGrid.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import TablePanel from '$lib/components/TablePanel.svelte';
 	import {
+		type BookingResult,
 		createBookingTimeOptions,
 		roundToQuarterHour,
 		toDateInputValue,
@@ -19,6 +21,12 @@
 		type Zone
 	} from '$lib';
 	import type { PageData } from './$types';
+
+	type BookingConfirmation = BookingResult & {
+		tableNumber: string;
+		zoneName: string;
+		durationMinutes: number;
+	};
 
 	let { data }: { data: PageData } = $props();
 
@@ -41,6 +49,8 @@
 	let selectedTableId = $state<number | null>(null);
 	let pageMessage = $state('');
 	let bookingMessage = $state('');
+	let bookingConfirmation = $state<BookingConfirmation | null>(null);
+	let bookingConfirmationOpen = $state(false);
 	let customerName = $state('');
 	let customerPhone = $state('');
 	let bookingTime = $state(toTimeInputValue(roundedNow));
@@ -68,7 +78,9 @@
 		}
 	});
 
-	async function handleSearch() {
+	async function handleSearch(options: { resetSelection?: boolean; clearBookingMessage?: boolean } = {}) {
+		const { resetSelection = true, clearBookingMessage = true } = options;
+
 		if (!search.zoneId) {
 			pageMessage = 'Select a zone before searching.';
 			return;
@@ -76,8 +88,12 @@
 
 		searching = true;
 		pageMessage = '';
-		bookingMessage = '';
-		selectedTableId = null;
+		if (clearBookingMessage) {
+			bookingMessage = '';
+		}
+		if (resetSelection) {
+			selectedTableId = null;
+		}
 
 		try {
 			const params = new URLSearchParams({
@@ -108,6 +124,13 @@
 		bookingMessage = '';
 	}
 
+	function handleBookingConfirmationClose() {
+		bookingConfirmationOpen = false;
+		bookingConfirmation = null;
+		selectedTableId = null;
+		bookingMessage = '';
+	}
+
 	async function handleBooking() {
 		if (!selectedTable) {
 			return;
@@ -126,10 +149,21 @@
 				customerPhone
 			});
 
-			bookingMessage = `Booked table ${selectedTable.tableNumber} for ${customerName} (status ${bookingResult.statusCode}).`;
+			if (!bookingResult.response) {
+				throw new Error('Booking created but no reservation details were returned.');
+			}
+
+			bookingConfirmation = {
+				...bookingResult.response,
+				tableNumber: selectedTable.tableNumber,
+				zoneName: selectedTable.zoneName,
+				durationMinutes: search.durationMinutes
+			};
+			bookingConfirmationOpen = true;
+			bookingMessage = '';
 			customerName = '';
 			customerPhone = '';
-			await handleSearch();
+			await handleSearch({ resetSelection: false, clearBookingMessage: false });
 		} catch (error) {
 			bookingMessage = error instanceof Error ? error.message : 'Booking failed.';
 		} finally {
@@ -221,4 +255,10 @@
 			</div>
 		</div>
 	{/if}
+
+	<BookingConfirmationDialog
+		onClose={handleBookingConfirmationClose}
+		open={bookingConfirmationOpen}
+		reservation={bookingConfirmation}
+	/>
 </div>

@@ -36,11 +36,14 @@ async function POSTrequest<T>(path: string, fetcher: typeof fetch = fetch): Prom
 }
 
 
-export function fetchZones(fetcher?: typeof fetch) {
+export function fetchZones(fetcher?: typeof fetch): Promise<ApiResult<Zone[]>> {
 	return GETrequest<Zone[]>('/zones', fetcher);
 }
 
-export function postBooking(payload: BookingPayload, fetcher?: typeof fetch) {
+export function postBooking(
+	payload: BookingPayload,
+	fetcher?: typeof fetch
+): Promise<ApiResult<BookingResult>> {
 	const params = new URLSearchParams({
 		tableId: String(payload.tableId),
 		startTime: payload.startTime,

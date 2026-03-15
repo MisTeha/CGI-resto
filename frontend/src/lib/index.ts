@@ -49,7 +49,15 @@ export type BookingPayload = {
 	customerPhone: string;
 };
 
-export type BookingResult = Record<string, unknown>;
+export type BookingResult = {
+	id: number;
+	tableId: number;
+	startTime: string;
+	endTime: string;
+	numberOfPeople: number;
+	customerName: string;
+	customerPhone: string;
+};
 
 export const DURATION_OPTIONS = [
 	{ value: 60, label: '60 min' },
