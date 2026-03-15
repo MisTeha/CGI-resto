@@ -19,9 +19,13 @@ Olen väga tuttav veebirakendustele backendi loomisega ja tavadega, kuid Spring 
 
 ## TODO
 
-[] alustada frontendiga
+[] svelte kliendipoolne koristus:
+[] - svelte v5-pärane kood
+[] - komponendid Daisy ja shadcn kasutusel, mitte custom gpt kood
 [] suvaliste reserveeringute gen db loomisel  
 [] hoida teste up to date, (pole prioriteet)  
+[x] frontend'i loogika (serveri poole) refactor 
+[x] alustada frontendiga  
 [x] laudade scoring valem / midagi muud (aga võiks veel muutuda)  
 [x] service (+ controller?) layer endpointidele. mingi, status codeid ja errorid  
 [x] esmased endpointid  

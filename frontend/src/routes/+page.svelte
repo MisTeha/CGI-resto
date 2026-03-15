@@ -1,74 +1,65 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 
-	import { fetchRecommendations, fetchTables, fetchZones, postBooking } from '$lib/api';
+	import { postBooking } from '$lib/api';
 	import FloorGrid from '$lib/components/FloorGrid.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import TablePanel from '$lib/components/TablePanel.svelte';
 	import {
 		createBookingTimeOptions,
-		deriveFloorTables,
 		roundToQuarterHour,
 		toDateInputValue,
 		toTimeInputValue,
+		type FloorTable,
+		type FloorSearchResult,
 		type RecommendationBuckets,
 		type SearchParams,
-		type RestoTable,
 		type Zone
 	} from '$lib';
+import type { PageData } from './$types';
+
+	export let data: PageData;
 
 	const roundedNow = roundToQuarterHour();
 
-	let zones: Zone[] = [];
-	let allTables: RestoTable[] = [];
-	let recommendations: RecommendationBuckets | null = null;
-	let loading = true;
+	let zones: Zone[] = data.zones ?? [];
+	let floorSnapshot: FloorSearchResult | null = data.floor ?? null;
+	let floorTables: FloorTable[] = floorSnapshot?.tables ?? [];
+	let recommendations: RecommendationBuckets | null = floorSnapshot?.recommendations ?? null;
+	let loading = false;
 	let searching = false;
 	let booking = false;
 	let selectedTableId: number | null = null;
-	let pageMessage = '';
+	let pageMessage = data.errorMessage ?? '';
 	let bookingMessage = '';
 	let customerName = '';
 	let customerPhone = '';
 	let bookingTime = toTimeInputValue(roundedNow);
 
-	let search: SearchParams = {
+	let search: SearchParams = data.search ?? {
 		date: toDateInputValue(roundedNow),
 		time: toTimeInputValue(roundedNow),
 		durationMinutes: 90,
-		zoneId: 0,
+		zoneId: data.zones?.[0]?.id ?? 0,
 		partySize: 2,
 		windowPreferred: false,
 		privacyPreferred: false
 	};
 
-	async function loadBootstrapData() {
-		loading = true;
-		pageMessage = '';
-
-		try {
-			const [zoneResponse, tableResponse] = await Promise.all([fetchZones(), fetchTables()]);
-			zones = zoneResponse.response ?? [];
-			allTables = tableResponse.response ?? [];
-
-			if (!search.zoneId && zones.length > 0) {
-				search.zoneId = zones[0].id;
-			}
-		} catch (error) {
-			pageMessage = error instanceof Error ? error.message : 'Could not load booking data.';
-		} finally {
-			loading = false;
+	$: zones = data.zones ?? [];
+	$: floorSnapshot = data.floor ?? null;
+	$: floorTables = floorSnapshot?.tables ?? [];
+	$: recommendations = floorSnapshot?.recommendations ?? null;
+	$: pageMessage = data.errorMessage ?? '';
+	$: {
+		if (data.search) {
+			search = { ...data.search };
+		} else if (!search.zoneId && zones.length > 0) {
+			search = { ...search, zoneId: zones[0].id };
 		}
 	}
 
-	onMount(loadBootstrapData);
-
-	$: zoneTables = allTables.filter((table) => !search.zoneId || table.zoneId === search.zoneId);
-	$: floorTables = deriveFloorTables(zoneTables, recommendations, selectedTableId);
-	$: selectedTable =
-		selectedTableId && zoneTables.some((table) => table.tableId === selectedTableId)
-			? (floorTables.find((table) => table.tableId === selectedTableId) ?? null)
-			: null;
+	$: selectedTable = floorTables.find((table) => table.tableId === selectedTableId) ?? null;
 	$: availableTimes = createBookingTimeOptions(search.time);
 	$: if (!availableTimes.includes(bookingTime)) {
 		bookingTime = availableTimes[0] ?? search.time;
@@ -86,8 +77,22 @@
 		selectedTableId = null;
 
 		try {
-			const recommendationResult = await fetchRecommendations(search);
-			recommendations = recommendationResult.response;
+			const params = new URLSearchParams({
+				date: search.date,
+				time: search.time,
+				durationMinutes: String(search.durationMinutes),
+				zoneId: String(search.zoneId),
+				partySize: String(search.partySize),
+				windowPreferred: String(search.windowPreferred),
+				privacyPreferred: String(search.privacyPreferred)
+			});
+
+			await goto(`?${params.toString()}`, {
+				replaceState: false,
+				keepFocus: true,
+				noScroll: true,
+				invalidateAll: true
+			});
 		} catch (error) {
 			pageMessage = error instanceof Error ? error.message : 'Search failed.';
 		} finally {
@@ -129,7 +134,7 @@
 		}
 	}
 
-	// TODO: move page state into a dedicated store/load function once the interaction model feels stable.
+	// TODO: move booking form fields into a dedicated store once the flow stabilizes.
 </script>
 
 <svelte:head>

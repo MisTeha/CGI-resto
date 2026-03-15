@@ -1,8 +1,4 @@
-export type Zone = {
-	id: number;
-	name: string;
-	description: string;
-};
+export type { Zone } from '$lib/server/zones';
 
 export type TableState = 'recommended' | 'available' | 'selected' | 'unavailable' | 'not-suitable';
 
@@ -27,6 +23,11 @@ export type RecommendationBuckets = {
 
 export type FloorTable = RestoTable & {
 	state: TableState;
+};
+
+export type FloorSearchResult = {
+	tables: FloorTable[];
+	recommendations: RecommendationBuckets | null;
 };
 
 export type SearchParams = {
@@ -104,33 +105,4 @@ export function createBookingTimeOptions(baseTime: string, count = 6) {
 		const nextMinutes = safeMinutes % 60;
 		return `${String(nextHour).padStart(2, '0')}:${String(nextMinutes).padStart(2, '0')}`;
 	});
-}
-
-export function deriveFloorTables(
-	sourceTables: RestoTable[],
-	buckets: RecommendationBuckets | null,
-	selectedTableId: number | null
-) {
-	const states = new Map<number, TableState>();
-
-	if (buckets?.mostRecommended) {
-		states.set(buckets.mostRecommended.tableId, 'recommended');
-	}
-
-	for (const table of buckets?.otherAvailable ?? []) {
-		states.set(table.tableId, 'available');
-	}
-
-	for (const table of buckets?.enoughSeatsAnotherTime ?? []) {
-		states.set(table.tableId, 'unavailable');
-	}
-
-	for (const table of buckets?.tooFewSeats ?? []) {
-		states.set(table.tableId, 'not-suitable');
-	}
-
-	return sourceTables.map((table) => ({
-		...table,
-		state: table.tableId === selectedTableId ? 'selected' : (states.get(table.tableId) ?? 'available')
-	}));
 }
