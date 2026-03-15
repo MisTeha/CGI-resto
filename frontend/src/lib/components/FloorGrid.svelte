@@ -11,9 +11,13 @@
 
 	let {
 		tables = [],
+		zoneName = '',
+		zoneHours = '',
 		selectedTableId = $bindable<number | null>(null)
 	}: {
 		tables: FloorTable[];
+		zoneName?: string;
+		zoneHours?: string;
 		selectedTableId: number | null;
 	} = $props();
 
@@ -40,7 +44,19 @@
 				<Badge class="badge badge-error" variant="outline">Not suitable</Badge>
 			</div>
 		</div>
-		<p class="text-sm text-muted-foreground">Tables use backend coordinates so the floor stays data-driven.</p>
+		<div class="space-y-1">
+			{#if zoneName}
+				<p class="text-sm text-muted-foreground">
+					Zone: <span class="font-medium text-base-content">{zoneName}</span>
+				</p>
+			{/if}
+			{#if zoneHours}
+				<p class="text-sm text-muted-foreground">
+					Open: <span class="font-medium text-base-content">{zoneHours}</span>
+				</p>
+			{/if}
+			<p class="text-sm text-muted-foreground">Tables use backend coordinates so the floor stays data-driven.</p>
+		</div>
 	</CardHeader>
 	<CardContent>
 		{#if tables.length === 0}

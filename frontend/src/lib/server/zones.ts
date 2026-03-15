@@ -4,6 +4,8 @@ export type Zone = {
 	id: number;
 	name: string;
 	description: string;
+	openingTime: string | null;
+	closingTime: string | null;
 };
 
 export async function fetchZonesServer(): Promise<Zone[]> {

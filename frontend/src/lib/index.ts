@@ -59,6 +59,16 @@ export type BookingResult = {
 	customerPhone: string;
 };
 
+export type Reservation = {
+	id: number;
+	tableId: number;
+	startTime: string;
+	endTime: string;
+	numberOfPeople: number;
+	customerName: string;
+	customerPhone: string;
+};
+
 export const DURATION_OPTIONS = [
 	{ value: 60, label: '60 min' },
 	{ value: 90, label: '90 min' },

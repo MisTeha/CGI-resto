@@ -140,17 +140,21 @@
 			<form class="space-y-4" onsubmit={handleBookSubmit}>
 				<div class="form-control space-y-2">
 					<Label for="booking-time">Time</Label>
-					<Select.Root type="single" value={selectedTimeValue} onValueChange={handleSelectedTimeChange}>
-						<Select.Trigger class="w-full bg-base-100" id="booking-time">
-							{selectedTimeValue || 'Select time'}
-						</Select.Trigger>
-						<Select.Content class="border-base-300 bg-base-100 shadow-lg">
-							{#each availableTimes as time}
-								<Select.Item value={time} label={time} />
-							{/each}
-						</Select.Content>
-					</Select.Root>
-					<p class="text-xs text-muted-foreground">TODO: replace placeholder quarter-hour options with backend-provided slots.</p>
+					{#if availableTimes.length > 0}
+						<Select.Root type="single" value={selectedTimeValue} onValueChange={handleSelectedTimeChange}>
+							<Select.Trigger class="w-full bg-base-100" id="booking-time">
+								{selectedTimeValue || 'Select time'}
+							</Select.Trigger>
+							<Select.Content class="border-base-300 bg-base-100 shadow-lg">
+								{#each availableTimes as time}
+									<Select.Item value={time} label={time} />
+								{/each}
+							</Select.Content>
+						</Select.Root>
+						<p class="text-xs text-muted-foreground">Available starts are generated from zone hours, duration, and existing bookings.</p>
+					{:else}
+						<div class="alert alert-warning text-sm">No available time slots for this table on the selected date and duration.</div>
+					{/if}
 				</div>
 
 				<div class="form-control space-y-2">

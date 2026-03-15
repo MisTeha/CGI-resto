@@ -1,6 +1,7 @@
 import type {
 	BookingPayload,
 	BookingResult,
+	Reservation,
 	Zone
 } from '$lib';
 import { requestJsonWithStatus } from '$lib/request';
@@ -55,4 +56,17 @@ export function postBooking(
 
 	// TODO: switch this to a JSON body when the backend booking contract settles.
 	return POSTrequest<BookingResult>(`/bookings?${params.toString()}`, fetcher);
+}
+
+export function fetchReservationsByTableAndDay(
+	tableId: number,
+	day: string,
+	fetcher?: typeof fetch
+): Promise<ApiResult<Reservation[]>> {
+	const params = new URLSearchParams({
+		tableId: String(tableId),
+		day
+	});
+
+	return GETrequest<Reservation[]>(`/bookings/by-table-and-day?${params.toString()}`, fetcher);
 }

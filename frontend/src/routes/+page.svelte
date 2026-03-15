@@ -4,14 +4,15 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 
-	import { postBooking } from '$lib/api';
+	import { fetchReservationsByTableAndDay, postBooking } from '$lib/api';
 	import BookingConfirmationDialog from '$lib/components/BookingConfirmationDialog.svelte';
 	import FloorGrid from '$lib/components/FloorGrid.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import TablePanel from '$lib/components/TablePanel.svelte';
+	import { computeAvailableSlots, normalizeTime } from '$lib/time-slots';
 	import {
 		type BookingResult,
-		createBookingTimeOptions,
+		type Reservation,
 		roundToQuarterHour,
 		toDateInputValue,
 		toTimeInputValue,
@@ -51,6 +52,7 @@
 	let bookingMessage = $state('');
 	let bookingConfirmation = $state<BookingConfirmation | null>(null);
 	let bookingConfirmationOpen = $state(false);
+	let tableDayReservations = $state<Reservation[]>([]);
 	let customerName = $state('');
 	let customerPhone = $state('');
 	let bookingTime = $state(toTimeInputValue(roundedNow));
@@ -70,11 +72,49 @@
 	});
 
 	const selectedTable = $derived(floorTables.find((table) => table.tableId === selectedTableId) ?? null);
-	const availableTimes = $derived(createBookingTimeOptions(search.time));
+	const selectedZone = $derived(zones.find((zone) => zone.id === search.zoneId) ?? null);
+	const selectedTableZone = $derived(
+		selectedTable ? zones.find((zone) => zone.id === selectedTable.zoneId) ?? null : null
+	);
+	const selectedZoneHours = $derived.by(() => {
+		const opening = normalizeTime(selectedZone?.openingTime);
+		const closing = normalizeTime(selectedZone?.closingTime);
+		if (!opening || !closing) return 'Not configured';
+		return `${opening}–${closing}`;
+	});
+	const availableTimes = $derived(
+		computeAvailableSlots(selectedTableZone, tableDayReservations, search.durationMinutes)
+	);
+
+	$effect(() => {
+		if (!selectedTable) {
+			tableDayReservations = [];
+			return;
+		}
+
+		let cancelled = false;
+
+		fetchReservationsByTableAndDay(selectedTable.tableId, search.date)
+			.then((result) => {
+				if (!cancelled) {
+					tableDayReservations = result.response ?? [];
+				}
+			})
+			.catch((error) => {
+				console.error('Failed to load table reservations for slots:', error);
+				if (!cancelled) {
+					tableDayReservations = [];
+				}
+			});
+
+		return () => {
+			cancelled = true;
+		};
+	});
 
 	$effect(() => {
 		if (!availableTimes.includes(bookingTime)) {
-		bookingTime = availableTimes[0] ?? search.time;
+			bookingTime = availableTimes[0] ?? search.time;
 		}
 	});
 
@@ -215,7 +255,12 @@
 				</div>
 			</div>
 
-			<FloorGrid bind:selectedTableId tables={floorTables} />
+			<FloorGrid
+				bind:selectedTableId
+				tables={floorTables}
+				zoneHours={selectedZoneHours}
+				zoneName={selectedZone?.name ?? ''}
+			/>
 		</div>
 
 		<div class="hidden lg:block">
@@ -224,7 +269,7 @@
 				bind:customerName
 				bind:customerPhone
 				bind:selectedTime={bookingTime}
-				canBook={selectedTable?.state !== 'not-suitable'}
+				canBook={selectedTable?.state !== 'not-suitable' && availableTimes.length > 0}
 				message={bookingMessage}
 				selectedDate={search.date}
 				submitting={booking}
@@ -243,7 +288,7 @@
 					bind:customerName
 					bind:customerPhone
 					bind:selectedTime={bookingTime}
-					canBook={selectedTable?.state !== 'not-suitable'}
+					canBook={selectedTable?.state !== 'not-suitable' && availableTimes.length > 0}
 					message={bookingMessage}
 					mobile={true}
 					selectedDate={search.date}

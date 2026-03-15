@@ -5,12 +5,13 @@
   	 ülesehitus oleks loogiline ja kood ülalpeetav 
 	-->
 <script lang="ts">
-	import { DURATION_OPTIONS, TIME_OPTIONS, type SearchParams, type Zone } from '$lib';
+	import { DURATION_OPTIONS, type SearchParams, type Zone } from '$lib';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import { getSuitableSearchTimes } from '$lib/time-slots';
 	import * as Select from '$lib/components/ui/select';
 
 	let {
@@ -29,11 +30,22 @@
 	let durationValue = $state('');
 	let zoneValue = $state('');
 
+	const selectedZone = $derived(zones.find((zone) => String(zone.id) === zoneValue) ?? null);
+	const suitableTimeOptions = $derived(getSuitableSearchTimes(selectedZone, search.durationMinutes));
+
 	$effect(() => {
 		if (timeValue !== search.time) timeValue = search.time;
 		if (durationValue !== String(search.durationMinutes)) durationValue = String(search.durationMinutes);
 		if (zoneValue !== (search.zoneId ? String(search.zoneId) : '')) {
 			zoneValue = search.zoneId ? String(search.zoneId) : '';
+		}
+	});
+
+	$effect(() => {
+		if (!suitableTimeOptions.includes(search.time)) {
+			const fallback = suitableTimeOptions[0] ?? '';
+			timeValue = fallback;
+			search.time = fallback;
 		}
 	});
 
@@ -95,11 +107,14 @@
 							{timeValue || 'Select time'}
 						</Select.Trigger>
 						<Select.Content class="!border-base-300 !bg-base-100 !text-base-content shadow-xl">
-							{#each TIME_OPTIONS as option}
+							{#each suitableTimeOptions as option}
 								<Select.Item class="!bg-base-100 !text-base-content data-[highlighted]:!bg-base-200" value={option} label={option} />
 							{/each}
 						</Select.Content>
 					</Select.Root>
+					{#if suitableTimeOptions.length === 0}
+						<p class="text-xs text-warning">No suitable start times for this zone and duration.</p>
+					{/if}
 				</div>
 
 				<div class="form-control space-y-2">
