@@ -1,3 +1,6 @@
+
+
+<!-- AGENDI GENEREERITUD KOOD-->
 <script lang="ts">
 	import { goto } from '$app/navigation';
 
@@ -11,59 +14,59 @@
 		toDateInputValue,
 		toTimeInputValue,
 		type FloorTable,
-		type FloorSearchResult,
 		type RecommendationBuckets,
 		type SearchParams,
 		type Zone
 	} from '$lib';
-import type { PageData } from './$types';
+	import type { PageData } from './$types';
 
-	export let data: PageData;
+	let { data }: { data: PageData } = $props();
 
 	const roundedNow = roundToQuarterHour();
-
-	let zones: Zone[] = data.zones ?? [];
-	let floorSnapshot: FloorSearchResult | null = data.floor ?? null;
-	let floorTables: FloorTable[] = floorSnapshot?.tables ?? [];
-	let recommendations: RecommendationBuckets | null = floorSnapshot?.recommendations ?? null;
-	let loading = false;
-	let searching = false;
-	let booking = false;
-	let selectedTableId: number | null = null;
-	let pageMessage = data.errorMessage ?? '';
-	let bookingMessage = '';
-	let customerName = '';
-	let customerPhone = '';
-	let bookingTime = toTimeInputValue(roundedNow);
-
-	let search: SearchParams = data.search ?? {
+	const defaultSearch = {
 		date: toDateInputValue(roundedNow),
 		time: toTimeInputValue(roundedNow),
 		durationMinutes: 90,
-		zoneId: data.zones?.[0]?.id ?? 0,
+		zoneId: 0,
 		partySize: 2,
 		windowPreferred: false,
 		privacyPreferred: false
-	};
+	} satisfies SearchParams;
 
-	$: zones = data.zones ?? [];
-	$: floorSnapshot = data.floor ?? null;
-	$: floorTables = floorSnapshot?.tables ?? [];
-	$: recommendations = floorSnapshot?.recommendations ?? null;
-	$: pageMessage = data.errorMessage ?? '';
-	$: {
+	let zones = $state<Zone[]>([]);
+	let floorTables = $state<FloorTable[]>([]);
+	let recommendations = $state<RecommendationBuckets | null>(null);
+	let searching = $state(false);
+	let booking = $state(false);
+	let selectedTableId = $state<number | null>(null);
+	let pageMessage = $state('');
+	let bookingMessage = $state('');
+	let customerName = $state('');
+	let customerPhone = $state('');
+	let bookingTime = $state(toTimeInputValue(roundedNow));
+	let search = $state<SearchParams>(defaultSearch);
+
+	$effect(() => {
+		zones = data.zones ?? [];
+		floorTables = data.floor?.tables ?? [];
+		recommendations = data.floor?.recommendations ?? null;
+		pageMessage = data.errorMessage ?? '';
+
 		if (data.search) {
 			search = { ...data.search };
 		} else if (!search.zoneId && zones.length > 0) {
 			search = { ...search, zoneId: zones[0].id };
 		}
-	}
+	});
 
-	$: selectedTable = floorTables.find((table) => table.tableId === selectedTableId) ?? null;
-	$: availableTimes = createBookingTimeOptions(search.time);
-	$: if (!availableTimes.includes(bookingTime)) {
+	const selectedTable = $derived(floorTables.find((table) => table.tableId === selectedTableId) ?? null);
+	const availableTimes = $derived(createBookingTimeOptions(search.time));
+
+	$effect(() => {
+		if (!availableTimes.includes(bookingTime)) {
 		bookingTime = availableTimes[0] ?? search.time;
-	}
+		}
+	});
 
 	async function handleSearch() {
 		if (!search.zoneId) {
@@ -133,8 +136,6 @@ import type { PageData } from './$types';
 			booking = false;
 		}
 	}
-
-	// TODO: move booking form fields into a dedicated store once the flow stabilizes.
 </script>
 
 <svelte:head>
@@ -158,7 +159,7 @@ import type { PageData } from './$types';
 		</div>
 	</header>
 
-	<SearchBar {search} {zones} loading={loading || searching} on:submit={handleSearch} />
+	<SearchBar {search} {zones} loading={searching} onSubmit={handleSearch} />
 
 	<section class="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(22rem,1fr)] lg:items-start">
 		<div class="space-y-4">
@@ -194,14 +195,14 @@ import type { PageData } from './$types';
 				selectedDate={search.date}
 				submitting={booking}
 				table={selectedTable}
-				on:book={handleBooking}
+				onBook={handleBooking}
 			/>
 		</div>
 	</section>
 
 	{#if selectedTable}
 		<div class="lg:hidden">
-			<div class="fixed inset-0 z-20 bg-slate-950/30" role="presentation" on:click={handleTableSelectionReset}></div>
+			<div class="fixed inset-0 z-20 bg-slate-950/30" role="presentation" onclick={handleTableSelectionReset}></div>
 			<div class="fixed inset-x-0 bottom-0 z-30 max-h-[85vh] rounded-t-4xl px-3 pb-3">
 				<TablePanel
 					availableTimes={availableTimes}
@@ -214,8 +215,8 @@ import type { PageData } from './$types';
 					selectedDate={search.date}
 					submitting={booking}
 					table={selectedTable}
-					on:book={handleBooking}
-					on:close={handleTableSelectionReset}
+					onBook={handleBooking}
+					onClose={handleTableSelectionReset}
 				/>
 			</div>
 		</div>

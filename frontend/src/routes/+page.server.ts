@@ -16,43 +16,55 @@ function parsePositiveInt(value: string | null): number | null {
 }
 
 export const load: PageServerLoad = async ({ url }): Promise<PageServerData> => {
+	let zones: Zone[] = [];
+
 	try {
-		const zones = await fetchZonesServer();
-
-		const date = url.searchParams.get('date');
-		const time = url.searchParams.get('time');
-		const durationMinutes = parsePositiveInt(url.searchParams.get('durationMinutes'));
-		const zoneId = parsePositiveInt(url.searchParams.get('zoneId'));
-		const partySize = parsePositiveInt(url.searchParams.get('partySize'));
-		const windowPreferred = (url.searchParams.get('windowPreferred') ?? 'false') === 'true';
-		const privacyPreferred = (url.searchParams.get('privacyPreferred') ?? 'false') === 'true';
-
-		const hasSearchParams =
-			Boolean(date) &&
-			Boolean(time) &&
-			durationMinutes !== null &&
-			zoneId !== null &&
-			partySize !== null;
-
-		if (!hasSearchParams) {
-			return {
-				zones,
-				floor: null,
-				search: null,
-				errorMessage: ''
-			};
-		}
-
-		const search: SearchParams = {
-			date: date ?? '',
-			time: time ?? '',
-			durationMinutes: durationMinutes ?? 0,
-			zoneId: zoneId ?? 0,
-			partySize: partySize ?? 0,
-			windowPreferred,
-			privacyPreferred
+		zones = await fetchZonesServer();
+	} catch (error) {
+		console.error('Failed to load zones on server:', error);
+		return {
+			zones: [],
+			floor: null,
+			search: null,
+			errorMessage: error instanceof Error ? error.message : 'Could not load zones.'
 		};
+	}
 
+	const date = url.searchParams.get('date');
+	const time = url.searchParams.get('time');
+	const durationMinutes = parsePositiveInt(url.searchParams.get('durationMinutes'));
+	const zoneId = parsePositiveInt(url.searchParams.get('zoneId'));
+	const partySize = parsePositiveInt(url.searchParams.get('partySize'));
+	const windowPreferred = (url.searchParams.get('windowPreferred') ?? 'false') === 'true';
+	const privacyPreferred = (url.searchParams.get('privacyPreferred') ?? 'false') === 'true';
+
+	const hasSearchParams =
+		Boolean(date) &&
+		Boolean(time) &&
+		durationMinutes !== null &&
+		zoneId !== null &&
+		partySize !== null;
+
+	if (!hasSearchParams) {
+		return {
+			zones,
+			floor: null,
+			search: null,
+			errorMessage: ''
+		};
+	}
+
+	const search: SearchParams = {
+		date: date ?? '',
+		time: time ?? '',
+		durationMinutes: durationMinutes ?? 0,
+		zoneId: zoneId ?? 0,
+		partySize: partySize ?? 0,
+		windowPreferred,
+		privacyPreferred
+	};
+
+	try {
 		const floor = await searchFloorTablesServer(search);
 
 		return {
@@ -62,12 +74,15 @@ export const load: PageServerLoad = async ({ url }): Promise<PageServerData> => 
 			errorMessage: ''
 		};
 	} catch (error) {
-		console.error('Failed to load zones on server:', error);
+		console.error('Failed to load floor search data on server:', error);
 		return {
-			zones: [],
+			zones,
 			floor: null,
-			search: null,
-			errorMessage: error instanceof Error ? error.message : 'Could not load booking data.'
+			search,
+			errorMessage:
+				error instanceof Error
+					? `Could not load table recommendations. ${error.message}`
+					: 'Could not load table recommendations.'
 		};
 	}
 };

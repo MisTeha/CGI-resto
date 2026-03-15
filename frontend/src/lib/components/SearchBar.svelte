@@ -1,78 +1,154 @@
+
+
+<!-- AGENDI GENEREERITUD KOOD-->
+<!-- Komponente ei kirjutanud ma ise, kuid hoolitsesin selle eest, et
+  	 ülesehitus oleks loogiline ja kood ülalpeetav 
+	-->
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
-
 	import { DURATION_OPTIONS, TIME_OPTIONS, type SearchParams, type Zone } from '$lib';
+	import { Button } from '$lib/components/ui/button';
+	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
+	import { Checkbox } from '$lib/components/ui/checkbox';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import * as Select from '$lib/components/ui/select';
 
-	export let search: SearchParams;
-	export let zones: Zone[] = [];
-	export let loading = false;
+	let {
+		search,
+		zones = [],
+		loading = false,
+		onSubmit
+	}: {
+		search: SearchParams;
+		zones?: Zone[];
+		loading?: boolean;
+		onSubmit?: () => void;
+	} = $props();
 
-	const dispatch = createEventDispatcher<{ submit: void }>();
+	let timeValue = $state('');
+	let durationValue = $state('');
+	let zoneValue = $state('');
+
+	$effect(() => {
+		if (timeValue !== search.time) timeValue = search.time;
+		if (durationValue !== String(search.durationMinutes)) durationValue = String(search.durationMinutes);
+		if (zoneValue !== (search.zoneId ? String(search.zoneId) : '')) {
+			zoneValue = search.zoneId ? String(search.zoneId) : '';
+		}
+	});
+
+	function handleSubmit(event: SubmitEvent) {
+		event.preventDefault();
+		onSubmit?.();
+	}
+
+	function handleTimeChange(value: string) {
+		timeValue = value;
+		search.time = value;
+	}
+
+	function handleDurationChange(value: string) {
+		durationValue = value;
+		const parsedDuration = Number(value);
+		if (Number.isFinite(parsedDuration)) {
+			search.durationMinutes = parsedDuration;
+		}
+	}
+
+	function handleZoneChange(value: string) {
+		zoneValue = value;
+		const parsedZone = Number(value);
+		if (Number.isFinite(parsedZone)) {
+			search.zoneId = parsedZone;
+		}
+	}
 </script>
 
-<form class="space-y-4 rounded-3xl border border-slate-200 bg-white/90 p-4 shadow-sm" on:submit|preventDefault={() => dispatch('submit')}>
-	<!-- TODO: swap these controls to DaisyUI / shadcn-svelte primitives once the interaction model stabilizes. -->
-	<div class="flex items-start justify-between gap-3">
-		<div>
-			<p class="text-sm font-semibold text-slate-900">Find a table</p>
-			<p class="text-sm text-slate-500">Start with the bare minimum filters and keep the structure easy to change.</p>
+<Card class="card border border-base-300 bg-base-100 shadow-sm">
+	<CardHeader class="flex flex-row flex-wrap items-start justify-between gap-3 space-y-0">
+		<div class="space-y-1">
+			<CardTitle class="text-base">Find a table</CardTitle>
+			<CardDescription>Start with the core filters and keep the flow lightweight.</CardDescription>
 		</div>
-		<button class="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400" disabled={loading || !search.zoneId} type="submit">
+		<Button class="btn btn-primary" disabled={loading || !search.zoneId} type="submit" form="search-form">
 			{loading ? 'Searching…' : 'Search tables'}
-		</button>
-	</div>
+		</Button>
+	</CardHeader>
+	<CardContent>
+		<form class="space-y-4" id="search-form" onsubmit={handleSubmit}>
+			<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
+				<div class="form-control space-y-2">
+					<Label for="search-date">Date</Label>
+					<Input
+						bind:value={search.date}
+						class="input input-bordered w-full bg-base-100 [color-scheme:light] [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-80"
+						id="search-date"
+						required
+						type="date"
+					/>
+				</div>
 
-	<div class="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-		<label class="space-y-2 text-sm text-slate-600">
-			<span class="font-medium text-slate-900">Date</span>
-			<input bind:value={search.date} class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 outline-none ring-0 transition focus:border-slate-400" required type="date" />
-		</label>
+				<div class="form-control space-y-2">
+					<Label for="search-time">Time</Label>
+					<Select.Root type="single" value={timeValue} onValueChange={handleTimeChange}>
+						<Select.Trigger class="w-full !bg-base-100 !text-base-content" id="search-time">
+							{timeValue || 'Select time'}
+						</Select.Trigger>
+						<Select.Content class="!border-base-300 !bg-base-100 !text-base-content shadow-xl">
+							{#each TIME_OPTIONS as option}
+								<Select.Item class="!bg-base-100 !text-base-content data-[highlighted]:!bg-base-200" value={option} label={option} />
+							{/each}
+						</Select.Content>
+					</Select.Root>
+				</div>
 
-		<label class="space-y-2 text-sm text-slate-600">
-			<span class="font-medium text-slate-900">Time</span>
-			<select bind:value={search.time} class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 outline-none transition focus:border-slate-400">
-				{#each TIME_OPTIONS as option}
-					<option value={option}>{option}</option>
-				{/each}
-			</select>
-		</label>
+				<div class="form-control space-y-2">
+					<Label for="search-duration">Duration</Label>
+					<Select.Root type="single" value={durationValue} onValueChange={handleDurationChange}>
+						<Select.Trigger class="w-full !bg-base-100 !text-base-content" id="search-duration">
+							{DURATION_OPTIONS.find((item) => String(item.value) === durationValue)?.label ?? 'Select duration'}
+						</Select.Trigger>
+						<Select.Content class="!border-base-300 !bg-base-100 !text-base-content shadow-xl">
+							{#each DURATION_OPTIONS as option}
+								<Select.Item class="!bg-base-100 !text-base-content data-[highlighted]:!bg-base-200" value={String(option.value)} label={option.label} />
+							{/each}
+						</Select.Content>
+					</Select.Root>
+				</div>
 
-		<label class="space-y-2 text-sm text-slate-600">
-			<span class="font-medium text-slate-900">Duration</span>
-			<select bind:value={search.durationMinutes} class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 outline-none transition focus:border-slate-400">
-				{#each DURATION_OPTIONS as option}
-					<option value={option.value}>{option.label}</option>
-				{/each}
-			</select>
-		</label>
+				<div class="form-control space-y-2">
+					<Label for="search-zone">Zone</Label>
+					<Select.Root type="single" value={zoneValue} onValueChange={handleZoneChange}>
+						<Select.Trigger class="w-full !bg-base-100 !text-base-content" id="search-zone">
+							{zones.find((zone) => String(zone.id) === zoneValue)?.name ?? 'Select zone'}
+						</Select.Trigger>
+						<Select.Content class="!border-base-300 !bg-base-100 !text-base-content shadow-xl">
+							{#each zones as zone}
+								<Select.Item class="!bg-base-100 !text-base-content data-[highlighted]:!bg-base-200" value={String(zone.id)} label={zone.name} />
+							{/each}
+						</Select.Content>
+					</Select.Root>
+				</div>
 
-		<label class="space-y-2 text-sm text-slate-600">
-			<span class="font-medium text-slate-900">Zone</span>
-			<select bind:value={search.zoneId} class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 outline-none transition focus:border-slate-400">
-				<option disabled value={0}>Select a zone</option>
-				{#each zones as zone}
-					<option value={zone.id}>{zone.name}</option>
-				{/each}
-			</select>
-		</label>
+				<div class="form-control space-y-2">
+					<Label for="search-people">People</Label>
+					<Input bind:value={search.partySize} class="input input-bordered w-full" id="search-people" min="1" type="number" />
+				</div>
 
-		<label class="space-y-2 text-sm text-slate-600">
-			<span class="font-medium text-slate-900">People</span>
-			<input bind:value={search.partySize} class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 outline-none transition focus:border-slate-400" min="1" type="number" />
-		</label>
-
-		<div class="space-y-2 text-sm text-slate-600">
-			<span class="font-medium text-slate-900">Preferences</span>
-			<div class="flex flex-wrap gap-2">
-				<label class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
-					<input bind:checked={search.windowPreferred} class="h-4 w-4 rounded border-slate-300" type="checkbox" />
-					<span>Window</span>
-				</label>
-				<label class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
-					<input bind:checked={search.privacyPreferred} class="h-4 w-4 rounded border-slate-300" type="checkbox" />
-					<span>Privacy</span>
-				</label>
+				<div class="form-control space-y-2">
+					<Label>Preferences</Label>
+					<div class="flex flex-wrap gap-2">
+						<div class="flex items-center gap-2 rounded-md border border-base-300 px-3 py-2">
+							<Checkbox id="pref-window" bind:checked={search.windowPreferred} />
+							<Label class="cursor-pointer" for="pref-window">Window</Label>
+						</div>
+						<div class="flex items-center gap-2 rounded-md border border-base-300 px-3 py-2">
+							<Checkbox id="pref-privacy" bind:checked={search.privacyPreferred} />
+							<Label class="cursor-pointer" for="pref-privacy">Privacy</Label>
+						</div>
+					</div>
+				</div>
 			</div>
-		</div>
-	</div>
-</form>
+		</form>
+	</CardContent>
+</Card>

@@ -1,58 +1,71 @@
+
+
+<!-- AGENDI GENEREERITUD KOOD-->
+<!-- Komponente ei kirjutanud ma ise, kuid hoolitsesin selle eest, et
+  	 ülesehitus oleks loogiline ja kood ülalpeetav 
+	-->
 <script lang="ts">
 	import type { FloorTable } from '$lib';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
 
-	export let tables: FloorTable[] = [];
-	export let selectedTableId: number | null = null;
+	let {
+		tables = [],
+		selectedTableId = $bindable<number | null>(null)
+	}: {
+		tables: FloorTable[];
+		selectedTableId: number | null;
+	} = $props();
 
 	const stateStyles: Record<FloorTable['state'], string> = {
-		recommended: 'border-emerald-400 bg-emerald-100 text-emerald-900',
-		available: 'border-sky-300 bg-sky-50 text-sky-900',
-		selected: 'border-slate-900 bg-slate-900 text-white',
-		unavailable: 'border-amber-300 bg-amber-50 text-amber-900',
-		'not-suitable': 'border-rose-300 bg-rose-50 text-rose-900'
+		recommended: 'border-success bg-success text-success-content',
+		available: 'border-info bg-info text-info-content',
+		selected: 'border-neutral bg-neutral text-neutral-content ring-2 ring-primary',
+		unavailable: 'border-warning bg-warning text-warning-content',
+		'not-suitable': 'border-error bg-error text-error-content'
 	};
 
-	$: maxX = Math.max(6, ...tables.map((table) => table.gridX ?? 1));
-	$: maxY = Math.max(4, ...tables.map((table) => table.gridY ?? 1));
+	const maxX = $derived(Math.max(6, ...tables.map((table) => table.gridX ?? 1)));
+	const maxY = $derived(Math.max(4, ...tables.map((table) => table.gridY ?? 1)));
 </script>
 
-<div class="space-y-4 rounded-3xl border border-slate-200 bg-white/90 p-4 shadow-sm">
-	<div class="flex flex-wrap items-center justify-between gap-3">
-		<div>
-			<h2 class="text-lg font-semibold text-slate-900">Floor plan</h2>
-			<p class="text-sm text-slate-500">Tables are placed from backend coordinates so layout stays data-driven.</p>
-		</div>
-		<div class="flex flex-wrap gap-2 text-xs font-medium">
-			<span class="rounded-full bg-emerald-100 px-3 py-1 text-emerald-900">Recommended</span>
-			<span class="rounded-full bg-sky-100 px-3 py-1 text-sky-900">Available</span>
-			<span class="rounded-full bg-amber-100 px-3 py-1 text-amber-900">Another time</span>
-			<span class="rounded-full bg-rose-100 px-3 py-1 text-rose-900">Not suitable</span>
-		</div>
-	</div>
-
-	{#if tables.length === 0}
-		<div class="rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">
-			No tables to show yet. Pick a zone or run a search to populate the grid.
-		</div>
-	{:else}
-		<!-- TODO: replace the placeholder grid chrome with a richer room visualization after the basic flow settles. -->
-		<div class="overflow-auto rounded-3xl border border-slate-200 bg-slate-50 p-4">
-			<div
-				class="grid min-w-xl gap-3"
-				style={`grid-template-columns: repeat(${maxX}, minmax(4.5rem, 1fr)); grid-template-rows: repeat(${maxY}, minmax(4.5rem, 1fr));`}
-			>
-				{#each tables as table, index (table.tableId)}
-					<button
-						class={`flex min-h-18 flex-col items-center justify-center rounded-2xl border p-2 text-center text-sm font-medium shadow-sm transition hover:-translate-y-0.5 hover:shadow ${stateStyles[table.tableId === selectedTableId ? 'selected' : table.state]}`}
-						style={`grid-column: ${table.gridX ?? 1}; grid-row: ${table.gridY ?? index + 1};`}
-						type="button"
-						on:click={() => (selectedTableId = table.tableId)}
-					>
-						<span class="text-base font-semibold">{table.tableNumber}</span>
-						<span class="text-xs opacity-80">{table.nSeats} seats</span>
-					</button>
-				{/each}
+<Card class="card border border-base-300 bg-base-100 shadow-sm">
+	<CardHeader class="space-y-3">
+		<div class="flex flex-wrap items-center justify-between gap-3">
+			<CardTitle class="text-lg">Floor plan</CardTitle>
+			<div class="flex flex-wrap gap-2 text-xs">
+				<Badge class="badge badge-success" variant="outline">Recommended</Badge>
+				<Badge class="badge badge-info" variant="outline">Available</Badge>
+				<Badge class="badge badge-warning" variant="outline">Another time</Badge>
+				<Badge class="badge badge-error" variant="outline">Not suitable</Badge>
 			</div>
 		</div>
-	{/if}
-</div>
+		<p class="text-sm text-muted-foreground">Tables use backend coordinates so the floor stays data-driven.</p>
+	</CardHeader>
+	<CardContent>
+		{#if tables.length === 0}
+			<div class="alert border border-dashed border-base-300 bg-base-200/50">
+				<span class="text-sm">No tables to show yet. Pick a zone or run a search to populate the grid.</span>
+			</div>
+		{:else}
+			<div class="overflow-auto rounded-box border border-base-300 bg-base-200/40 p-4">
+				<div
+					class="grid min-w-xl gap-3"
+					style={`grid-template-columns: repeat(${maxX}, minmax(4.5rem, 1fr)); grid-template-rows: repeat(${maxY}, minmax(4.5rem, 1fr));`}
+				>
+					{#each tables as table, index (table.tableId)}
+						<button
+							class={`btn h-auto min-h-18 w-full flex-col gap-0.5 whitespace-normal border p-2 text-center text-xs shadow-sm ${stateStyles[table.tableId === selectedTableId ? 'selected' : table.state]}`}
+							style={`grid-column: ${table.gridX ?? 1}; grid-row: ${table.gridY ?? index + 1};`}
+							type="button"
+							onclick={() => (selectedTableId = table.tableId)}
+						>
+							<span class="text-sm font-semibold">{table.tableNumber}</span>
+							<span class="opacity-85">{table.nSeats} seats</span>
+						</button>
+					{/each}
+				</div>
+			</div>
+		{/if}
+	</CardContent>
+</Card>

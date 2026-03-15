@@ -1,20 +1,67 @@
+
+
+<!-- AGENDI GENEREERITUD KOOD-->
+<!-- Komponente ei kirjutanud ma ise, kuid hoolitsesin selle eest, et
+  	 ülesehitus oleks loogiline ja kood ülalpeetav 
+	-->
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
-
 	import type { FloorTable } from '$lib';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import {
+		Card,
+		CardContent,
+		CardDescription,
+		CardFooter,
+		CardHeader,
+		CardTitle
+	} from '$lib/components/ui/card';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import * as Select from '$lib/components/ui/select';
 
-	export let table: FloorTable | null = null;
-	export let selectedDate = '';
-	export let selectedTime = '';
-	export let availableTimes: string[] = [];
-	export let customerName = '';
-	export let customerPhone = '';
-	export let submitting = false;
-	export let message = '';
-	export let mobile = false;
-	export let canBook = true;
+	let {
+		table = null,
+		selectedDate = '',
+		selectedTime = $bindable(''),
+		availableTimes = [],
+		customerName = $bindable(''),
+		customerPhone = $bindable(''),
+		submitting = false,
+		message = '',
+		mobile = false,
+		canBook = true,
+		onBook,
+		onClose
+	}: {
+		table?: FloorTable | null;
+		selectedDate?: string;
+		selectedTime: string;
+		availableTimes?: string[];
+		customerName: string;
+		customerPhone: string;
+		submitting?: boolean;
+		message?: string;
+		mobile?: boolean;
+		canBook?: boolean;
+		onBook?: () => void;
+		onClose?: () => void;
+	} = $props();
+	let selectedTimeValue = $state('');
 
-	const dispatch = createEventDispatcher<{ book: void; close: void }>();
+	$effect(() => {
+		if (selectedTimeValue !== selectedTime) selectedTimeValue = selectedTime;
+	});
+
+	function handleBookSubmit(event: SubmitEvent) {
+		event.preventDefault();
+		onBook?.();
+	}
+
+	function handleSelectedTimeChange(value: string) {
+		selectedTimeValue = value;
+		selectedTime = value;
+	}
 
 	function availabilityLabel(state: FloorTable['state']) {
 		switch (state) {
@@ -32,83 +79,100 @@
 	}
 </script>
 
-<div class={`flex h-full flex-col rounded-3xl border border-slate-200 bg-white/95 p-4 shadow-sm ${mobile ? 'max-h-[85vh]' : ''}`}>
-	<div class="flex items-start justify-between gap-3">
-		<div>
-			<p class="text-sm font-semibold text-slate-900">Table details</p>
-			<p class="text-sm text-slate-500">Keep this panel thin for now and evolve it as the booking flow gets clearer.</p>
+<Card class={`card border border-base-300 bg-base-100 shadow-sm ${mobile ? 'max-h-[85vh]' : 'h-full'}`}>
+	<CardHeader class="space-y-2">
+		<div class="flex items-start justify-between gap-3">
+			<div>
+				<CardTitle class="text-base">Table details</CardTitle>
+				<CardDescription>Inspect table properties and place a booking.</CardDescription>
+			</div>
+			{#if mobile}
+					<Button class="btn btn-sm" type="button" variant="outline" onclick={() => onClose?.()}>Close</Button>
+			{/if}
 		</div>
-		{#if mobile}
-			<button class="rounded-full border border-slate-200 px-3 py-1 text-sm text-slate-600" type="button" on:click={() => dispatch('close')}>
-				Close
-			</button>
-		{/if}
-	</div>
+	</CardHeader>
 
 	{#if !table}
-		<div class="mt-4 flex flex-1 items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-4 text-center text-sm text-slate-500">
-			Select a table from the grid to inspect details and test the booking form.
-		</div>
+		<CardContent class="flex flex-1 items-center justify-center">
+			<div class="alert border border-dashed border-base-300 bg-base-200/50 text-sm">
+				<span>Select a table from the grid to inspect details and test booking.</span>
+			</div>
+		</CardContent>
 	{:else}
-		<div class="mt-4 space-y-4 overflow-auto">
-			<div class="space-y-3 rounded-3xl bg-slate-50 p-4">
-				<div class="flex flex-wrap items-start justify-between gap-3">
+		<CardContent class="space-y-4 overflow-auto">
+			<div class="rounded-box bg-base-200/50 p-4">
+				<div class="mb-3 flex flex-wrap items-start justify-between gap-3">
 					<div>
-						<h2 class="text-xl font-semibold text-slate-900">Table {table.tableNumber}</h2>
-						<p class="text-sm text-slate-500">{table.zoneName}</p>
+						<h2 class="text-xl font-semibold">Table {table.tableNumber}</h2>
+						<p class="text-sm text-muted-foreground">{table.zoneName}</p>
 					</div>
-					<span class="rounded-full bg-slate-900 px-3 py-1 text-xs font-medium text-white">{availabilityLabel(table.state)}</span>
+					<Badge class="badge badge-neutral" variant="secondary">{availabilityLabel(table.state)}</Badge>
 				</div>
 
-				<div class="grid gap-3 text-sm text-slate-600 sm:grid-cols-2">
-					<div class="rounded-2xl bg-white px-3 py-2">
-						<p class="text-xs uppercase tracking-wide text-slate-400">Seats</p>
-						<p class="mt-1 font-medium text-slate-900">{table.nSeats}</p>
+				<div class="grid gap-2 text-sm sm:grid-cols-2">
+					<div class="stats w-full bg-base-100 shadow-none">
+						<div class="stat px-3 py-2">
+							<div class="stat-title text-xs">Seats</div>
+							<div class="stat-value text-base">{table.nSeats}</div>
+						</div>
 					</div>
-					<div class="rounded-2xl bg-white px-3 py-2">
-						<p class="text-xs uppercase tracking-wide text-slate-400">Window</p>
-						<p class="mt-1 font-medium text-slate-900">{table.nextToWindow ? 'Yes' : 'No'}</p>
+					<div class="stats w-full bg-base-100 shadow-none">
+						<div class="stat px-3 py-2">
+							<div class="stat-title text-xs">Window</div>
+							<div class="stat-value text-base">{table.nextToWindow ? 'Yes' : 'No'}</div>
+						</div>
 					</div>
-					<div class="rounded-2xl bg-white px-3 py-2">
-						<p class="text-xs uppercase tracking-wide text-slate-400">Privacy</p>
-						<p class="mt-1 font-medium text-slate-900">{table.privacyScore ?? '—'}</p>
+					<div class="stats w-full bg-base-100 shadow-none">
+						<div class="stat px-3 py-2">
+							<div class="stat-title text-xs">Privacy</div>
+							<div class="stat-value text-base">{table.privacyScore ?? '—'}</div>
+						</div>
 					</div>
-					<div class="rounded-2xl bg-white px-3 py-2">
-						<p class="text-xs uppercase tracking-wide text-slate-400">Date</p>
-						<p class="mt-1 font-medium text-slate-900">{selectedDate}</p>
+					<div class="stats w-full bg-base-100 shadow-none">
+						<div class="stat px-3 py-2">
+							<div class="stat-title text-xs">Date</div>
+							<div class="stat-value truncate text-base">{selectedDate}</div>
+						</div>
 					</div>
 				</div>
 			</div>
 
-			<form class="space-y-4" on:submit|preventDefault={() => dispatch('book')}>
-				<div class="space-y-2 text-sm text-slate-600">
-					<label class="font-medium text-slate-900" for="booking-time">Time</label>
-					<select bind:value={selectedTime} class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 outline-none transition focus:border-slate-400" id="booking-time">
-						{#each availableTimes as time}
-							<option value={time}>{time}</option>
-						{/each}
-					</select>
-					<p class="text-xs text-slate-500">TODO: replace these placeholder quarter-hour options with backend-provided slot data.</p>
+			<form class="space-y-4" onsubmit={handleBookSubmit}>
+				<div class="form-control space-y-2">
+					<Label for="booking-time">Time</Label>
+					<Select.Root type="single" value={selectedTimeValue} onValueChange={handleSelectedTimeChange}>
+						<Select.Trigger class="w-full bg-base-100" id="booking-time">
+							{selectedTimeValue || 'Select time'}
+						</Select.Trigger>
+						<Select.Content class="border-base-300 bg-base-100 shadow-lg">
+							{#each availableTimes as time}
+								<Select.Item value={time} label={time} />
+							{/each}
+						</Select.Content>
+					</Select.Root>
+					<p class="text-xs text-muted-foreground">TODO: replace placeholder quarter-hour options with backend-provided slots.</p>
 				</div>
 
-				<div class="space-y-2 text-sm text-slate-600">
-					<label class="font-medium text-slate-900" for="customer-name">Customer name</label>
-					<input bind:value={customerName} class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 outline-none transition focus:border-slate-400" id="customer-name" placeholder="Jane Doe" required type="text" />
+				<div class="form-control space-y-2">
+					<Label for="customer-name">Customer name</Label>
+					<Input bind:value={customerName} class="input input-bordered w-full" id="customer-name" placeholder="Jane Doe" required type="text" />
 				</div>
 
-				<div class="space-y-2 text-sm text-slate-600">
-					<label class="font-medium text-slate-900" for="customer-phone">Customer phone</label>
-					<input bind:value={customerPhone} class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 outline-none transition focus:border-slate-400" id="customer-phone" placeholder="+37255512345" required type="tel" />
+				<div class="form-control space-y-2">
+					<Label for="customer-phone">Customer phone</Label>
+					<Input bind:value={customerPhone} class="input input-bordered w-full" id="customer-phone" placeholder="+37255512345" required type="tel" />
 				</div>
 
 				{#if message}
-					<p class="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">{message}</p>
+					<div class="alert alert-info text-sm">{message}</div>
 				{/if}
 
-				<button class="w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400" disabled={submitting || !canBook} type="submit">
-					{submitting ? 'Booking…' : canBook ? 'Book this table' : 'Table does not fit current party'}
-				</button>
+				<CardFooter class="p-0">
+					<Button class="btn btn-primary w-full" disabled={submitting || !canBook} type="submit">
+						{submitting ? 'Booking…' : canBook ? 'Book this table' : 'Table does not fit current party'}
+					</Button>
+				</CardFooter>
 			</form>
-		</div>
+		</CardContent>
 	{/if}
-</div>
+</Card>
