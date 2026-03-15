@@ -11,9 +11,10 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
-// järgnev klass on tehtud keelemudeli poolt.
-// TODO: broneeringud suvaliselt
+// järgnev klass on tehtud keelemudeli poolt,
+// v.a. random meetodid.
 
 @Component
 public class DataLoader implements CommandLineRunner {
@@ -28,6 +29,47 @@ public class DataLoader implements CommandLineRunner {
         this.restoTableRepository = restoTableRepository;
         this.reservationRepository = reservationRepository;
     }
+    // JÄRGNEVAD MEETODID ON MINU ENDA TEHTUD
+    private void reserveTableRandom(RestoTable table) {
+        LocalDateTime now = LocalDateTime.now();
+        Zone zone = table.getZone();
+
+        for (int i = 0; i < 7; i++) {
+            LocalDateTime day = now.plusDays(i);
+            LocalDateTime openFrom = day.with(zone.getOpeningTime());
+            LocalDateTime openUntil = day.with(zone.getClosingTime());
+            LocalDateTime start = i == 0 && now.isAfter(openFrom) ? now : openFrom;
+
+            if (!start.isBefore(openUntil)) {
+                continue;
+            }
+
+            reserveTableRandom(table, start, openUntil, 5);
+        }
+        
+    }   
+
+    private void reserveTableRandom(RestoTable table, LocalDateTime openFrom, LocalDateTime openUntil, int atMost) {
+        LocalDateTime last = LocalDateTime.from(openFrom);
+        for (int i = 0; i < atMost; i++) {
+            int delay = ((int) (Math.random() * 20)) * 15;
+            int duration = 30 + ((int) (Math.random() * 3)) * 30;
+
+            LocalDateTime start = last.plusMinutes(delay);
+            LocalDateTime end = start.plusMinutes(duration);
+            if (end.isAfter(openUntil)) {
+                break;
+            }
+            
+            last = end;
+
+            int nPeople = 1 + (int) (Math.random() * table.getNSeats());
+            Reservation res = new Reservation(start, end, table, nPeople, "Test User", "555-1234");
+            reservationRepository.save(res);
+        }
+    }
+
+    
 
     @Override
     public void run(String... args) throws Exception {
@@ -64,35 +106,9 @@ public class DataLoader implements CommandLineRunner {
         restoTableRepository.save(table5);
         restoTableRepository.save(table6);
 
-        // Create sample reservations
-        LocalDateTime now = LocalDateTime.now();
+        // JÄRGNEV OSA ON MINU ENDA TEHTUD
+        List<RestoTable> tables = List.of(table1, table2, table3, table4, table5, table6);
+        tables.forEach(this::reserveTableRandom);
 
-        Reservation res1 = new Reservation(
-                now.plusHours(1),
-                now.plusHours(2),
-                table1,
-                2,
-                "John Doe",
-                "+372 123 4567");
-
-        Reservation res2 = new Reservation(
-                now.plusHours(3),
-                now.plusHours(5),
-                table2,
-                4,
-                "Jane Smith",
-                "+372 987 6543");
-
-        Reservation res3 = new Reservation(
-                now.plusDays(1).withHour(19).withMinute(0),
-                now.plusDays(1).withHour(21).withMinute(0),
-                table6,
-                8,
-                "Corporate Event",
-                "+372 555 1234");
-
-        reservationRepository.save(res1);
-        reservationRepository.save(res2);
-        reservationRepository.save(res3);
     }
 }
