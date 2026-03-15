@@ -1,6 +1,7 @@
 package com.umkolka.cgiresto.service;
 
 import com.umkolka.cgiresto.entity.RestoTable;
+import com.umkolka.cgiresto.entity.Zone;
 import com.umkolka.cgiresto.repository.RestoTableRepository;
 import com.umkolka.cgiresto.repository.ZoneRepository;
 import org.springframework.http.HttpStatus;
@@ -36,10 +37,15 @@ public class AvailabilityService {
 
     private final RestoTableRepository tableRepository;
     private final ZoneRepository zoneRepository;
+        private final ZoneHoursPolicy zoneHoursPolicy;
 
-    public AvailabilityService(RestoTableRepository tableRepository, ZoneRepository zoneRepository) {
+        public AvailabilityService(
+                        RestoTableRepository tableRepository,
+                        ZoneRepository zoneRepository,
+                        ZoneHoursPolicy zoneHoursPolicy) {
         this.tableRepository = tableRepository;
         this.zoneRepository = zoneRepository;
+                this.zoneHoursPolicy = zoneHoursPolicy;
     }
 
     public RecommendationBuckets recommend(
@@ -51,7 +57,8 @@ public class AvailabilityService {
             Boolean privacyPreferred) {
 
         LocalDateTime endTime = startTime.plusMinutes(durationMinutes);
-        validateRangeAndZone(startTime, endTime, zoneId);
+        Zone zone = validateRangeAndZone(startTime, endTime, zoneId);
+        zoneHoursPolicy.validateBookingWindow(zone, startTime, endTime);
 
         List<RecommendationView> availableEnoughSeats = toRecommendationViews(
                 tableRepository.findAvailableTablesByZoneAndMinSeats(startTime, endTime, zoneId, partySize));
@@ -77,14 +84,14 @@ public class AvailabilityService {
                 tooFewSeats);
     }
 
-    private void validateRangeAndZone(LocalDateTime startTime, LocalDateTime endTime, Long zoneId) {
+        private Zone validateRangeAndZone(LocalDateTime startTime, LocalDateTime endTime, Long zoneId) {
         if (!endTime.isAfter(startTime)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Broneeringu lõpp peab olema peale algust");
         }
 
-        if (!zoneRepository.existsById(zoneId)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tsooni ID-ga " + zoneId + " ei leitud");
-        }
+                return zoneRepository.findById(zoneId)
+                                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                                "Tsooni ID-ga " + zoneId + " ei leitud"));
     }
 
     private List<RecommendationView> toRecommendationViews(List<RestoTable> tables) {

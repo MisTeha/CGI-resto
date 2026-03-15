@@ -2,6 +2,7 @@ package com.umkolka.cgiresto.service;
 
 import com.umkolka.cgiresto.entity.Reservation;
 import com.umkolka.cgiresto.entity.RestoTable;
+import com.umkolka.cgiresto.entity.Zone;
 import com.umkolka.cgiresto.repository.ReservationRepository;
 import com.umkolka.cgiresto.repository.RestoTableRepository;
 import org.springframework.http.HttpStatus;
@@ -27,10 +28,15 @@ public class BookingService {
 
     private final ReservationRepository reservationRepository;
     private final RestoTableRepository tableRepository;
+    private final ZoneHoursPolicy zoneHoursPolicy;
 
-    public BookingService(ReservationRepository reservationRepository, RestoTableRepository tableRepository) {
+    public BookingService(
+            ReservationRepository reservationRepository,
+            RestoTableRepository tableRepository,
+            ZoneHoursPolicy zoneHoursPolicy) {
         this.reservationRepository = reservationRepository;
         this.tableRepository = tableRepository;
+        this.zoneHoursPolicy = zoneHoursPolicy;
     }
 
     public BookingView createBooking(
@@ -53,6 +59,9 @@ public class BookingService {
         if (!endTime.isAfter(startTime)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Broneeringu lõpp peab olema peale algust");
         }
+
+        Zone zone = table.getZone();
+        zoneHoursPolicy.validateBookingWindow(zone, startTime, endTime);
 
         boolean hasConflict = reservationRepository.existsOverlappingReservation(tableId, startTime, endTime);
         if (hasConflict) {
