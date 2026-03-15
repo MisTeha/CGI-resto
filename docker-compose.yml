@@ -1,0 +1,23 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    env_file:
+      - path: ./backend/.env
+        required: false
+    #ports:
+    #  - "8080:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+    depends_on:
+      - backend
+    env_file:
+      - path: ./frontend/.env
+        required: false
+    environment:
+      BACKEND_ORIGIN: ${BACKEND_ORIGIN:-http://backend:8080}
+      BACKEND_API_BASE: ${BACKEND_API_BASE:-http://backend:8080/api}
+    ports:
+      - "4173:4173"

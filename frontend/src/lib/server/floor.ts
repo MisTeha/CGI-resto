@@ -1,7 +1,6 @@
 import { combineDateAndTime, type FloorTable, type RecommendationBuckets, type RestoTable, type SearchParams, type TableState } from '$lib';
 import { requestJson } from '$lib/request';
-
-const API_BASE = 'http://localhost:8080/api';
+import { backendApiBase } from '$lib/server/backend';
 
 export type FloorSearchResult = {
 	tables: FloorTable[];
@@ -44,8 +43,8 @@ export async function searchFloorTablesServer(search: SearchParams): Promise<Flo
 	});
 
 	const [tables, recommendations] = await Promise.all([
-		requestJson<RestoTable[]>(`${API_BASE}/tables`, { cache: 'no-store' }),
-		requestJson<RecommendationBuckets>(`${API_BASE}/availability/recommendations?${params.toString()}`, {
+		requestJson<RestoTable[]>(`${backendApiBase}/tables`, { cache: 'no-store' }),
+		requestJson<RecommendationBuckets>(`${backendApiBase}/availability/recommendations?${params.toString()}`, {
 			cache: 'no-store'
 		})
 	]);

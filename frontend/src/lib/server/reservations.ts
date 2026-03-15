@@ -1,6 +1,5 @@
 import { requestJson } from '$lib/request';
-
-const API_BASE = 'http://localhost:8080/api';
+import { backendApiBase } from '$lib/server/backend';
 
 export type Reservation = {
 	id: number;
@@ -22,7 +21,7 @@ export async function fetchReservationsByTableAndDayServer(
 			day
 		});
 
-		return await requestJson<Reservation[]>(`${API_BASE}/bookings/by-table-and-day?${params.toString()}`, {
+		return await requestJson<Reservation[]>(`${backendApiBase}/bookings/by-table-and-day?${params.toString()}`, {
 			cache: 'no-store'
 		});
 	} catch (error) {

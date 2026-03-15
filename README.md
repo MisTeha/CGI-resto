@@ -2,9 +2,40 @@
 **Autor:** Uku Mihkel Kolka  
 **Teema:** Restorani broneeringusüsteem
 
+## Rakenduse käivitamine
+
+### Docker Compose-iga
+
+Käivitada juurkaustas
+
+```
+docker compose up
+```
+
+Kui see töötab, siis minna brauseris aadressile http://localhost:4173. Et backendi pärida, käivitada rakendus manuaalselt (vt järgmine alapeatükk) või `docker.compose.yml` failis sisse kommenteerida pordi `8080` edastus.
+
+### Manuaalselt (dev)
+
+Java backend
+```
+sh /backend/gradlew bootRun
+```
+
+Svelte frontend
+```
+cd frontend/
+npm run dev
+```
+
 ## Backend
 
-Olen väga tuttav veebirakendustele backendi loomisega ja tavadega, kuid Spring Boot-i õppisin süvitsi esimest korda selle projekti tegemise käigus. Arendades kasutasin võimalikult palju Spring-i dokumentatsiooni ja näiteid, projekti failistruktuur on üksnes keelemudeli pakutud (mõnel juhul parandatud).
+Olen väga tuttav veebirakendustele backendi loomisega ja tavadega, kuid Spring Boot-i õppisin süvitsi esimest korda selle projekti tegemise käigus. Arendades kasutasin võimalikult palju Spring-i dokumentatsiooni ja näiteid, projekti failistruktuur on üksnes keelemudeli pakutud (mõnel juhul parandatud). 
+
+## Frontend
+
+Valisin raamistikuks Svelte, kuna töötan aktiivselt veel ühe Svelte rakendusega. Seda proovitööd tehes polnud frontend minu jaoks prioriteet, seetõttu arendasin seda suuresti agendiga, tehes ise api-ga seotud funktsioone ning pidevalt kontrollides, et kood püsiks ikkagi selline, mida ise ka kirjutaks. Committides ning failisisestes kommentaarides on täpsustatud, kas tegija olin mina või agent. 
+
+
 
 ### Õppisin / tuletasin meelde / teadvustasin 
 
@@ -19,11 +50,12 @@ Olen väga tuttav veebirakendustele backendi loomisega ja tavadega, kuid Spring 
 
 ## TODO
 
-[] svelte kliendipoolne koristus:
-[] - svelte v5-pärane kood
-[] - komponendid Daisy ja shadcn kasutusel, mitte custom gpt kood
-[] suvaliste reserveeringute gen db loomisel  
-[] hoida teste up to date, (pole prioriteet)  
+[x] dockeriga käivitamine
+[x] svelte kliendipoolne koristus:  
+[x] - svelte v5-pärane kood  
+[x] - komponendid Daisy ja shadcn kasutusel, mitte custom gpt kood  
+[x] suvaliste reserveeringute gen db loomisel  
+[x] ~~hoida teste up to date, (pole prioriteet)~~   
 [x] frontend'i loogika (serveri poole) refactor 
 [x] alustada frontendiga  
 [x] laudade scoring valem / midagi muud (aga võiks veel muutuda)  

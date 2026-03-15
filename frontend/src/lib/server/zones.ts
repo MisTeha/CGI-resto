@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:8080/api';
+import { backendApiBase } from '$lib/server/backend';
 
 export type Zone = {
 	id: number;
@@ -10,7 +10,7 @@ export type Zone = {
 
 export async function fetchZonesServer(): Promise<Zone[]> {
 	try {
-		const response = await fetch(`${API_BASE}/zones`, {
+		const response = await fetch(`${backendApiBase}/zones`, {
 			headers: { Accept: 'application/json' }
 		});
 
