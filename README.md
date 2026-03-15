@@ -42,10 +42,12 @@ Valisin raamistikuks Svelte, kuna töötan aktiivselt veel ühe Svelte rakenduse
 - Java Stream-id on väga (minuarust) väga kohmakad, aga väga rikkalikud ning palju kasutatud *(teadvustasin)*
 - Javas (ja mujal) API-des on tihti kasutusel lisaks *handler*-ile ja *service*-ile **DTO**-d, mis map-ivad endpointi ja service vahel andmetüüpe. Neid ise aga kasutusele ei võtnud ja hõlmasin seda *service* tasemel. *(õppisin)*
 - API-t luues arvestada sellega, mis frontendis toimuma hakkab, on keeruline. Pean silmas seda, et kas nt tagastada ainult laudade ID-sid või tervet objekti. (tuletasin meelde)
+- Frontendis tuleb *error handling*-u jaoks arvestada juhtudega, mis pole backendis probleemid. (teadvustasin ja nt "reservation date must be in the future" pole *handle*-itud.)
+- Korrapärast või ühtlast juhuslikkust ei ole kerge saavutada. (tuletasin meelde)
 
 ### Komistuskohad
 
-- Spring-i "maagia", nii koodi kirjutades kui debugimisel tuli maagia sama palju kasuks kui kahjuks oma keerukusega.
+- Spring-i "maagia", nii koodi kirjutades kui debugimisel, tuli oma keerukuse tõttu sama palju kahjuks, kui kasuks.
 - Raske oli otsustada, milliseid filtreid rakendada andmebaasis ning milliseid *service* tasemel. Lõpuks otsustasin olla kuigi andmebaasi filtrite põhine (vt AvailabilityService).
 
 ## TODO
