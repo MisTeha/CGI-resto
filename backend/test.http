@@ -12,12 +12,22 @@ Accept: application/json
 GET {{baseUrl}}/api/zones
 Accept: application/json
 
+### Example zone response now includes openingTime/closingTime
+
 ### ─── Availability ────────────────────────────────────────────────────────────
 
 ### Get table recommendations (minimal params)
 GET {{baseUrl}}/api/availability/recommendations
   ?startTime=2026-03-15T18:00:00
   &durationMinutes=90
+  &partySize=2
+  &zoneId=1
+Accept: application/json
+
+### Get recommendations outside zone opening hours (should return 400)
+GET {{baseUrl}}/api/availability/recommendations
+  ?startTime=2026-03-15T09:00:00
+  &durationMinutes=60
   &partySize=2
   &zoneId=1
 Accept: application/json
@@ -52,6 +62,16 @@ POST {{baseUrl}}/api/bookings
   &numberOfPeople=2
   &customerName=Jane%20Doe
   &customerPhone=%2B37255512345
+Accept: application/json
+
+### Create booking outside zone opening hours (should return 400)
+POST {{baseUrl}}/api/bookings
+  ?tableId=1
+  &startTime=2026-03-15T22:30:00
+  &durationMinutes=60
+  &numberOfPeople=2
+  &customerName=Late%20Guest
+  &customerPhone=%2B37250000000
 Accept: application/json
 
 ### Create a booking (larger group)

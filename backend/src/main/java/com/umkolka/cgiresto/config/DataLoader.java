@@ -10,6 +10,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 // järgnev klass on tehtud keelemudeli poolt.
 // TODO: broneeringud suvaliselt
@@ -36,9 +37,9 @@ public class DataLoader implements CommandLineRunner {
         }
 
         // Create zones
-        Zone mainZone = new Zone("Main Hall", "Central dining area");
-        Zone outdoorZone = new Zone("Outdoor Patio", "Garden seating");
-        Zone vipZone = new Zone("VIP Lounge", "Private dining room");
+        Zone mainZone = new Zone("Main Hall", "Central dining area", LocalTime.of(11, 0), LocalTime.of(22, 0));
+        Zone outdoorZone = new Zone("Outdoor Patio", "Garden seating", LocalTime.of(12, 0), LocalTime.of(21, 0));
+        Zone vipZone = new Zone("VIP Lounge", "Private dining room", LocalTime.of(17, 0), LocalTime.of(23, 0));
 
         zoneRepository.save(mainZone);
         zoneRepository.save(outdoorZone);
